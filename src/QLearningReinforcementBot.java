@@ -134,9 +134,20 @@ public class QLearningReinforcementBot extends AbstractScript {
         GameObject ironore = GameObjects.closest("Iron rocks");
 
         if (ironore != null && ironore.distance() < 6) {
-            ironore.interact("Mine");
-            sleep(2000);
-            Sleep.sleepUntil(() -> initialOreCount < Inventory.count("Iron ore"), 8000);
+            boolean interacted = false;
+            for (int i = 0; i < 3; i++) { // Retry mechanism: try up to 3 times
+                if (ironore.interact("Mine")) {
+                    interacted = true;
+                    break;
+                }
+                else{log("failed to interact retrying");}
+            }
+            if (interacted) {
+                // Wait until the ore count increases or a timeout occurs
+                sleep(2000);
+                Sleep.sleepUntil(() -> initialOreCount < Inventory.count("Iron ore"), 8000);
+            }
+
         }
 
         if (initialOreCount < Inventory.count("Iron ore")) {

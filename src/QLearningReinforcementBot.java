@@ -134,32 +134,33 @@ public class QLearningReinforcementBot extends AbstractScript {
         GameObject ironore = GameObjects.closest("Iron rocks");
 
         if (ironore != null && ironore.distance() < 6) {
-            boolean interacted = false;
-            for (int i = 0; i < 3; i++) { // Retry mechanism: try up to 3 times
-                if (ironore.interact("Mine")) {
-                    interacted = true;
-                    break;
+                boolean interacted = false;
+                for (int i = 0; i < 3; i++) { // Retry mechanism: try up to 3 times
+                    if (ironore.interact("Mine")) {
+                        interacted = true;
+                        break;
+                    }
+                    else{log("failed to interact retrying");}
                 }
-                else{log("failed to interact retrying");}
+                if (interacted) {
+                    // Wait until the ore count increases or a timeout occurs
+                    sleep(2000);
+                    Sleep.sleepUntil(() -> initialOreCount < Inventory.count("Iron ore"), 8000);
+                }
+    
+            
+    
+            if (initialOreCount < Inventory.count("Iron ore")) {
+                receivedOre = true;
+                log("Successfully mined ore at: " + currentState);
+            } else {
+                receivedOre = false;
+                log("Failed to mine ore at: " + currentState);
             }
-            if (interacted) {
-                // Wait until the ore count increases or a timeout occurs
-                sleep(2000);
-                Sleep.sleepUntil(() -> initialOreCount < Inventory.count("Iron ore"), 8000);
-            }
-
+    
+            updateQValuesBasedOnMiningResult();
+            sleep(1000);
         }
-
-        if (initialOreCount < Inventory.count("Iron ore")) {
-            receivedOre = true;
-            log("Successfully mined ore at: " + currentState);
-        } else {
-            receivedOre = false;
-            log("Failed to mine ore at: " + currentState);
-        }
-
-        updateQValuesBasedOnMiningResult();
-        sleep(1000);
     }
 
     private void updateQValuesBasedOnMiningResult() {
